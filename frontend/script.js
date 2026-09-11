@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/tasks";
+const API_URL = "https://task-management-app-j2ji.onrender.com/api";
 const token = localStorage.getItem("token");
 
 if (!token) {
