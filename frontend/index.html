@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TaskFlow | Task Management</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <span>✓</span> TaskFlow
+        </div>
+
+      
+        <nav>
+    <a href="#" class="active" onclick="filterTasks('all')">📊 Dashboard</a>
+    <a href="#" onclick="filterTasks('all')">📋 All Tasks</a>
+    <a href="#" onclick="filterTasks('Pending')">🕐 Pending</a>
+    <a href="#" onclick="filterTasks('In Progress')">⚡ In Progress</a>
+    <a href="#" onclick="filterTasks('Completed')">✅ Completed</a>
+</nav>
+
+       <div class="sidebar-bottom">
+    <button class="logout-btn" onclick="logout()">
+        Logout
+    </button>
+
+    <p>Task Management App</p>
+</div>
+    </aside>
+
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Top bar -->
+        <header class="topbar">
+
+           <div>
+    <h1>Dashboard</h1>
+    <p>Manage your tasks efficiently</p>
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍 Search tasks..."
+        oninput="searchTasks()"
+        class="search-box"
+    >
+</div>
+
+            <button class="add-btn" onclick="openTaskForm()">
+                + Add Task
+            </button>
+
+        </header>
+
+
+        <main>
+
+            <!-- Statistics -->
+            <section class="stats">
+
+                <div class="stat-card">
+                    <div>
+                        <p>Total Tasks</p>
+                        <h2 id="totalTasks">0</h2>
+                    </div>
+                    <span class="stat-icon">📋</span>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <p>Pending</p>
+                        <h2 id="pendingTasks">0</h2>
+                    </div>
+                    <span class="stat-icon">🕐</span>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <p>In Progress</p>
+                        <h2 id="progressTasks">0</h2>
+                    </div>
+                    <span class="stat-icon">⚡</span>
+                </div>
+
+                <div class="stat-card">
+                    <div>
+                        <p>Completed</p>
+                        <h2 id="completedTasks">0</h2>
+                    </div>
+                    <span class="stat-icon">✅</span>
+                </div>
+
+            </section>
+
+
+            <!-- Add Task Form -->
+            <section class="task-form" id="taskForm">
+
+                <div class="form-header">
+                    <h2>Add New Task</h2>
+
+                    <button class="close-btn" onclick="closeTaskForm()">
+                        ×
+                    </button>
+                </div>
+
+                <input
+                    type="text"
+                    id="title"
+                    placeholder="Task title"
+                >
+
+                <textarea
+                    id="description"
+                    placeholder="Task description"
+                ></textarea>
+
+                <div class="form-row">
+
+                    <select id="status">
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+
+                    <input
+                        type="date"
+                        id="dueDate"
+                    >
+
+                </div>
+
+                <button class="save-btn" onclick="addTask()">
+                    Add Task
+                </button>
+
+            </section>
+
+
+            <!-- Tasks -->
+            <section class="tasks-section">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>My Tasks</h2>
+                        <p>Keep track of your work</p>
+                    </div>
+
+                </div>
+
+                <div id="taskList">
+                    <p>Loading tasks...</p>
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
