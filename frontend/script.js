@@ -5,23 +5,32 @@ if (!token) {
     window.location.href = "login.html";
 }
 
+let allTasks = [];
+
 // Load tasks when page opens
 document.addEventListener("DOMContentLoaded", loadTasks);
 
 
-// GET all tasks
+// ===============================
+// GET ALL TASKS
+// ===============================
 async function loadTasks() {
     try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/tasks`, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
         });
-        
+
+        if (!response.ok) {
+            throw new Error("Failed to load tasks");
+        }
+
         const tasks = await response.json();
-        allTasks = tasks;  
+        allTasks = tasks;
 
         displayTasks(tasks);
+
     } catch (error) {
         document.getElementById("taskList").innerHTML =
             "<p>Unable to load tasks.</p>";
@@ -31,9 +40,12 @@ async function loadTasks() {
 }
 
 
-// Display tasks
+// ===============================
+// DISPLAY TASKS
+// ===============================
 function displayTasks(tasks) {
-    // Update dashboard statistics
+
+    // Dashboard statistics
     document.getElementById("totalTasks").textContent = tasks.length;
 
     document.getElementById("pendingTasks").textContent =
@@ -44,10 +56,12 @@ function displayTasks(tasks) {
 
     document.getElementById("completedTasks").textContent =
         tasks.filter(task => task.status === "Completed").length;
+
     const taskList = document.getElementById("taskList");
 
     if (tasks.length === 0) {
-        taskList.innerHTML = "<p>No tasks yet. Add your first task!</p>";
+        taskList.innerHTML =
+            "<p>No tasks yet. Add your first task!</p>";
         return;
     }
 
@@ -56,39 +70,56 @@ function displayTasks(tasks) {
 
             <h3>${task.title}</h3>
 
-            <p>${task.description || "No description"}</p>
+            <p>
+                ${task.description || "No description"}
+            </p>
 
-         <p>
-    <strong>Status:</strong>
-    <span class="status-badge ${task.status.replace(" ", "-").toLowerCase()}">
-        ${task.status}
-    </span>
-</p>
+            <p>
+                <strong>Status:</strong>
+
+                <span class="status-badge ${task.status
+                    .replace(" ", "-")
+                    .toLowerCase()}">
+                    ${task.status}
+                </span>
+            </p>
 
             <p>
                 <strong>Due Date:</strong>
-                ${task.dueDate
-                    ? new Date(task.dueDate).toLocaleDateString()
-                    : "Not set"}
+                ${
+                    task.dueDate
+                        ? new Date(task.dueDate).toLocaleDateString()
+                        : "Not set"
+                }
             </p>
 
             <div class="task-actions">
-               <select onchange="updateStatus('${task._id}', this.value)">
-    <option value="Pending" ${task.status === "Pending" ? "selected" : ""}>
-        Pending
-    </option>
-    <option value="In Progress" ${task.status === "In Progress" ? "selected" : ""}>
-        In Progress
-    </option>
-    <option value="Completed" ${task.status === "Completed" ? "selected" : ""}>
-        Completed
-    </option>
-</select>
 
-                <button class="delete-btn"
+                <select onchange="updateStatus('${task._id}', this.value)">
+
+                    <option value="Pending"
+                        ${task.status === "Pending" ? "selected" : ""}>
+                        Pending
+                    </option>
+
+                    <option value="In Progress"
+                        ${task.status === "In Progress" ? "selected" : ""}>
+                        In Progress
+                    </option>
+
+                    <option value="Completed"
+                        ${task.status === "Completed" ? "selected" : ""}>
+                        Completed
+                    </option>
+
+                </select>
+
+                <button
+                    class="delete-btn"
                     onclick="deleteTask('${task._id}')">
                     Delete
                 </button>
+
             </div>
 
         </div>
@@ -96,13 +127,22 @@ function displayTasks(tasks) {
 }
 
 
-// CREATE task
+// ===============================
+// CREATE TASK
+// ===============================
 async function addTask() {
 
-    const title = document.getElementById("title").value.trim();
-    const description = document.getElementById("description").value.trim();
-    const status = document.getElementById("status").value;
-    const dueDate = document.getElementById("dueDate").value;
+    const title =
+        document.getElementById("title").value.trim();
+
+    const description =
+        document.getElementById("description").value.trim();
+
+    const status =
+        document.getElementById("status").value;
+
+    const dueDate =
+        document.getElementById("dueDate").value;
 
     if (!title) {
         alert("Please enter a task title.");
@@ -111,22 +151,28 @@ async function addTask() {
 
     try {
 
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}/tasks`, {
             method: "POST",
+
             headers: {
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${token}`
             },
+
             body: JSON.stringify({
-                title,
-                description,
-                status,
+                title: title,
+                description: description,
+                status: status,
                 dueDate: dueDate || undefined
             })
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-            throw new Error("Failed to create task");
+            throw new Error(
+                data.message || "Failed to create task"
+            );
         }
 
         // Clear form
@@ -135,48 +181,66 @@ async function addTask() {
         document.getElementById("status").value = "Pending";
         document.getElementById("dueDate").value = "";
 
+        // Reload tasks
         loadTasks();
+
+        // Close form
         closeTaskForm();
 
     } catch (error) {
-        console.error(error);
+
+        console.error("Error:", error);
+
         alert("Unable to add task.");
     }
 }
 
 
-
-// UPDATE task status
+// ===============================
+// UPDATE TASK STATUS
+// ===============================
 async function updateStatus(id, newStatus) {
+
     try {
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({
-                status: newStatus
-            })
-        });
+
+        const response = await fetch(
+            `${API_URL}/tasks/${id}`,
+            {
+                method: "PUT",
+
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+
+                body: JSON.stringify({
+                    status: newStatus
+                })
+            }
+        );
 
         const data = await response.json();
 
         if (!response.ok) {
-            throw new Error(data.message || "Failed to update task");
+            throw new Error(
+                data.message || "Failed to update task"
+            );
         }
 
         loadTasks();
 
     } catch (error) {
+
         console.error(error);
+
         alert("Unable to update task.");
     }
 }
 
 
-
-// DELETE task
+// ===============================
+// DELETE TASK
+// ===============================
 async function deleteTask(id) {
 
     const confirmDelete = confirm(
@@ -189,37 +253,67 @@ async function deleteTask(id) {
 
     try {
 
-        const response = await fetch(`${API_URL}/${id}`, {
-            method: "DELETE",
-            headers: {
-                "Authorization": `Bearer ${token}`
+        const response = await fetch(
+            `${API_URL}/tasks/${id}`,
+            {
+                method: "DELETE",
+
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
             }
-        });
+        );
+
+        const data = await response.json();
 
         if (!response.ok) {
-            throw new Error("Failed to delete task");
+            throw new Error(
+                data.message || "Failed to delete task"
+            );
         }
 
         loadTasks();
 
     } catch (error) {
+
         console.error(error);
+
         alert("Unable to delete task.");
     }
 }
+
+
+// ===============================
+// OPEN TASK FORM
+// ===============================
 function openTaskForm() {
-    document.getElementById("taskForm").style.display = "block";
+
+    document.getElementById("taskForm").style.display =
+        "block";
 }
 
+
+// ===============================
+// CLOSE TASK FORM
+// ===============================
 function closeTaskForm() {
-    document.getElementById("taskForm").style.display = "none";
-}
-let allTasks = [];
 
+    document.getElementById("taskForm").style.display =
+        "none";
+}
+
+
+// ===============================
+// FILTER TASKS
+// ===============================
 function filterTasks(status) {
+
     if (status === "all") {
+
         displayTasks(allTasks);
+
     } else {
+
         const filteredTasks = allTasks.filter(
             task => task.status === status
         );
@@ -228,36 +322,65 @@ function filterTasks(status) {
     }
 
     // Highlight selected menu item
-    const links = document.querySelectorAll(".sidebar nav a");
+    const links =
+        document.querySelectorAll(".sidebar nav a");
 
     links.forEach(link => {
         link.classList.remove("active");
     });
 
     if (status === "Pending") {
+
         links[2].classList.add("active");
+
     } else if (status === "In Progress") {
+
         links[3].classList.add("active");
+
     } else if (status === "Completed") {
+
         links[4].classList.add("active");
+
     } else {
+
         links[0].classList.add("active");
     }
 }
+
+
+// ===============================
+// SEARCH TASKS
+// ===============================
 function searchTasks() {
-    const searchText = document
-        .getElementById("searchInput")
+
+    const searchText =
+        document.getElementById("searchInput")
         .value
         .toLowerCase();
 
     const filteredTasks = allTasks.filter(task =>
-        task.title.toLowerCase().includes(searchText) ||
-        (task.description || "").toLowerCase().includes(searchText)
+
+        task.title
+            .toLowerCase()
+            .includes(searchText)
+
+        ||
+
+        (task.description || "")
+            .toLowerCase()
+            .includes(searchText)
     );
 
     displayTasks(filteredTasks);
 }
+
+
+// ===============================
+// LOGOUT
+// ===============================
 function logout() {
+
     localStorage.removeItem("token");
+
     window.location.href = "login.html";
 }
